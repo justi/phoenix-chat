@@ -4,10 +4,20 @@ defmodule Slackir.RandomChannel do
 
   def join("random:lobby", payload, socket) do
     if authorized?(payload) do
+      send self(), :after_join
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
+  end
+
+  def handle_info(:after_join, socket) do
+    messages =
+      Slackir.Conversations.list_messages()
+      |> Enum.map(fn(m) -> %{message: m.message, name: m.name} end)
+
+    push socket, "messages_history", %{messages: messages}
+    {:noreply, socket}
   end
 
   # Channels can be used in a request/response fashion

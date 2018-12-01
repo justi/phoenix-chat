@@ -12,7 +12,7 @@ defmodule Slackir.DeleteMessagesWorker do
   end
 
   def remove_messages() do
-#    let time = NaiveDateTime.add(NaiveDateTime.utc_now(), - 60, :second)
-#    spawn(:ets, :delete, [:disappearing_messages_table, {NaiveDateTime.utc_now(), payload["name"], payload["message"]}])
+    #    let time = NaiveDateTime.add(NaiveDateTime.utc_now(), - 60, :second)
+    #    spawn(:ets, :delete, [:disappearing_messages_table, {NaiveDateTime.utc_now(), payload["name"], payload["message"]}])
   end
 end

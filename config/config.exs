@@ -14,8 +14,7 @@ config :slackir, Slackir.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "anGi9fO+95ZkYZKn7huNZwr22sEXw0R0+AWjhvZfF0ml60APsvAxQmMBBTP4LIDc",
   render_errors: [view: Slackir.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: Slackir.PubSub,
-           adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: Slackir.PubSub, adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -24,4 +23,4 @@ config :logger, :console,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"

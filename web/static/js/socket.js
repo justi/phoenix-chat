@@ -53,20 +53,28 @@ let socket = new Socket("/socket", {params: {token: window.userToken}})
 // authentication.
 
 socket.connect()
-let channel = socket.channel("random:lobby", {});
-let list    = $('#message-list');
-let message = $('#message');
-let name    = $('#name');
+let channel   = socket.channel("random:lobby", {});
+let list      = $('#message-list');
+let message   = $('#message');
+let name      = $('#name');
+let disappear = $('#disappear');
 
 message.on('keypress', event => {
     if (event.keyCode == 13) {
-        channel.push('shout', { name: name.val(), message: message.val() });
+        channel.push('shout', { name: name.val(), message: message.val(), disappear: disappear.is(':checked') });
         message.val('');
     }
 });
 
+
 channel.on('shout', payload => {
-    list.append(`<b>${payload.name || 'Anonymous'}:</b> ${payload.message}<br>`);
+    let line_message = "";
+    if (payload.disappear) {
+        line_message = `<b>${payload.name || 'Anonymous'}:</b> <font color="red">${payload.message}</font><br>`;
+    } else {
+        line_message = `<b>${payload.name || 'Anonymous'}:</b> ${payload.message}<br>`;
+    }
+    list.append(line_message);
     list.prop({scrollTop: list.prop("scrollHeight")});
 });
 
@@ -74,12 +82,21 @@ channel.join()
     .receive("ok", resp => { console.log("Joined successfully", resp) })
     .receive("error", resp => { console.log("Unable to join", resp) })
 
-
 channel.on('messages_history', messages => {
+
+    list.empty();
     let messages_list = messages["messages"];
 
     messages_list.forEach( function(msg) {
-        list.append(`<b>${msg["name"] || 'Anonymous'}:</b> ${msg["message"]}<br>`);
+        let line_message = "";
+        if (msg["disappear"]) {
+            line_message = `<b>${msg["name"] || 'Anonymous'}:</b> <font color="red">${msg["message"]}</font><br>`;
+        } else {
+            line_message = `<b>${msg["name"] || 'Anonymous'}:</b> ${msg["message"]}<br>`;
+        }
+        list.append(line_message);
         list.prop({scrollTop: list.prop("scrollHeight")});
     });
 });
+
+export default socket

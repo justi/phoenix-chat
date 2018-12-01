@@ -15,9 +15,10 @@ defmodule Slackir do
       # Start the Ecto repository
       supervisor(Slackir.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(SlackirWeb.Endpoint, []),
+      supervisor(Slackir.Endpoint, []),
       # Start your own worker by calling: Slackir.Worker.start_link(arg1, arg2, arg3)
       # worker(Slackir.Worker, [arg1, arg2, arg3]),
+      worker(Slackir.DeleteMessagesWorker, [])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

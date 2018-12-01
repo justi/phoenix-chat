@@ -3,7 +3,7 @@ defmodule Slackir.UserSocket do
 
   ## Channels
   # channel "room:*", Slackir.RoomChannel
-  channel "random:lobby", SlackirWeb.RandomChannel
+  channel "random:lobby", Slackir.RandomChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket

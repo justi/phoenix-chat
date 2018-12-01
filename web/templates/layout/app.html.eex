@@ -9,6 +9,8 @@
 
     <title>Hello Slackir!</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+
+    <script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
   </head>
 
   <body>
@@ -31,5 +33,6 @@
 
     </div> <!-- /container -->
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+
   </body>
 </html>

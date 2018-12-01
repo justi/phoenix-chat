@@ -1,5 +1,6 @@
-defmodule SlackirWeb.RandomChannel do
-  use SlackirWeb, :channel
+defmodule Slackir.RandomChannel do
+  use Slackir.Web, :channel
+
 
   def join("random:lobby", payload, socket) do
     if authorized?(payload) do

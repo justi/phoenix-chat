@@ -86,7 +86,8 @@ defmodule Slackir.RandomChannel do
       :timer.sleep(10000)
       :ets.delete(:disappearing_messages_table, time)
       messages = refresh_messages()
-      broadcast(socket, "messages_history", %{messages: messages})
+#      broadcast(socket, "messages_history", %{messages: messages})
+      broadcast(socket, "message_delete", %{time_id: time})
     end)
   end
 

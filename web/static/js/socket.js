@@ -60,12 +60,19 @@ let name      = $('#name');
 let disappear = $('#disappear');
 
 message.on('keypress', event => {
+    key_press_handle(event);
+});
+
+disappear.on('keypress', event => {
+    key_press_handle(event);
+});
+
+function key_press_handle(event) {
     if (event.keyCode == 13) {
         channel.push('shout', { name: name.val(), message: message.val(), disappear: disappear.is(':checked') });
         message.val('');
     }
-});
-
+};
 
 channel.on('shout', payload => {
     let line_message = "";
@@ -97,6 +104,10 @@ channel.on('messages_history', messages => {
         list.append(line_message);
         list.prop({scrollTop: list.prop("scrollHeight")});
     });
+});
+
+channel.on('message_delete', time_id => {
+    list.findById(time_id).delete();
 });
 
 export default socket

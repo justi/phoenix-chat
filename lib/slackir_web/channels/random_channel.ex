@@ -15,26 +15,7 @@ defmodule Slackir.RandomChannel do
   end
 
   def handle_info(:after_join, socket) do
-    messages =
-      Slackir.Conversations.list_messages()
-      |> Enum.map(
-        &%{message: &1.message, name: &1.name, disappear: false, timestamp: &1.inserted_at}
-      )
-
-    messages_ets =
-      :ets.match(:disappearing_messages_table, {:"$1", :"$2", :"$3"})
-      |> Enum.map(
-        &%{
-          message: Enum.at(&1, 2),
-          name: Enum.at(&1, 1),
-          disappear: true,
-          timestamp: Enum.at(&1, 0)
-        }
-      )
-
-    messages =
-      (messages ++ messages_ets)
-      |> Enum.sort(&(NaiveDateTime.compare(&1.timestamp, &2.timestamp) == :lt))
+    messages = refresh_messages()
 
     push(socket, "messages_history", %{messages: messages})
     {:noreply, socket}
@@ -44,6 +25,29 @@ defmodule Slackir.RandomChannel do
   # by sending replies to requests from the client
   def handle_in("ping", payload, socket) do
     {:reply, {:ok, payload}, socket}
+  end
+
+  def refresh_messages() do
+    messages =
+      Slackir.Conversations.list_messages()
+      |> Enum.map(
+           &%{message: &1.message, name: &1.name, disappear: false, timestamp: &1.inserted_at}
+         )
+
+    messages_ets =
+      :ets.match_object(:disappearing_messages_table, {:_, :_, :_})
+      |> Enum.map(
+           &%{
+             message: elem(&1, 2),
+             name: elem(&1, 1),
+             disappear: true,
+             timestamp: elem(&1, 0)
+           }
+         )
+
+    messages =
+      (messages ++ messages_ets)
+      |> Enum.sort(&(NaiveDateTime.compare(&1.timestamp, &2.timestamp) == :lt))
   end
 
   # It is also common to receive messages from the client and
@@ -61,15 +65,14 @@ defmodule Slackir.RandomChannel do
     expiration = :os.system_time(:seconds) + ttl
     time = NaiveDateTime.utc_now()
 
-    v = :ets.insert(:disappearing_messages_table, {time, payload["name"], payload["message"]})
-    IEx.pry()
+    :ets.insert(:disappearing_messages_table, {time, payload["name"], payload["message"]})
 
     spawn(:ets, :insert, [
       :disappearing_messages_table,
       {time, payload["name"], payload["message"]}
     ])
 
-    delete_and_refresh(time)
+    delete_and_refresh(socket, time)
     broadcast(socket, "shout", payload)
     {:noreply, socket}
   end
@@ -78,10 +81,12 @@ defmodule Slackir.RandomChannel do
     {:noreply, socket}
   end
 
-  def delete_and_refresh(time) do
+  def delete_and_refresh(socket, time) do
     spawn(fn ->
-      :timer.sleep(60000)
+      :timer.sleep(10000)
       :ets.delete(:disappearing_messages_table, time)
+      messages = refresh_messages()
+      broadcast(socket, "messages_history", %{messages: messages})
     end)
   end
 

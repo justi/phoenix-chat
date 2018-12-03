@@ -74,14 +74,16 @@ function key_press_handle(event) {
     }
 };
 
-channel.on('shout', payload => {
-    let line_message = "";
+function get_line_message(payload) {
     if (payload.disappear) {
-        line_message = `<div id="ts_${payload.id}"><b>${payload.name || 'Anonymous'}:</b> <font color="red">${payload.message}</font><br></div>`;
+        return `<div id="ts_${payload.id}"><b>${payload.name || 'Anonymous'}:</b> <font color="red">${payload.message}</font><br></div>`;
     } else {
-        line_message = `<b>${payload.name || 'Anonymous'}:</b> ${payload.message}<br>`;
+        return `<b>${payload.name || 'Anonymous'}:</b> ${payload.message}<br>`;
     }
-    list.append(line_message);
+}
+
+channel.on('shout', payload => {
+    list.append(get_line_message(payload));
     list.prop({scrollTop: list.prop("scrollHeight")});
 });
 
@@ -95,13 +97,7 @@ channel.on('messages_history', messages => {
     let messages_list = messages["messages"];
 
     messages_list.forEach( function(msg) {
-        let line_message = "";
-        if (msg["disappear"]) {
-            line_message = `<div id="ts_${msg["id"]}"><b>${msg["name"] || 'Anonymous'}:</b> <font color="red">${msg["message"]}</font><br></div>`;
-        } else {
-            line_message = `<b>${msg["name"] || 'Anonymous'}:</b> ${msg["message"]}<br>`;
-        }
-        list.append(line_message);
+        list.append(get_line_message(msg));
         list.prop({scrollTop: list.prop("scrollHeight")});
     });
 });

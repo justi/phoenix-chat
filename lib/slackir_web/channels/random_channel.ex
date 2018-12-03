@@ -2,6 +2,7 @@ defmodule Slackir.RandomChannel do
   use Slackir.Web, :channel
 
   require IEx
+  import Ecto
 
   def join("random:lobby", payload, socket) do
     IO.inspect("JOIN")
@@ -35,16 +36,16 @@ defmodule Slackir.RandomChannel do
          )
 
     messages_ets =
-      :ets.match_object(:disappearing_messages_table, {:_, :_, :_})
+      :ets.match_object(:disappearing_messages_table, {:_, :_, :_, :_})
       |> Enum.map(
            &%{
              message: elem(&1, 2),
              name: elem(&1, 1),
              disappear: true,
-             timestamp: elem(&1, 0)
+             timestamp: elem(&1, 0),
+             id: elem(&1, 3)
            }
          )
-
     messages =
       (messages ++ messages_ets)
       |> Enum.sort(&(NaiveDateTime.compare(&1.timestamp, &2.timestamp) == :lt))
@@ -54,7 +55,6 @@ defmodule Slackir.RandomChannel do
   # broadcast to everyone in the current topic (random:lobby).
 
   def handle_in("shout", %{"disappear" => false} = payload, socket) do
-    IO.inspect("siema")
     spawn(Slackir.Conversations, :create_message, [payload])
     broadcast(socket, "shout", payload)
     {:noreply, socket}
@@ -64,30 +64,24 @@ defmodule Slackir.RandomChannel do
     ttl = 30
     expiration = :os.system_time(:seconds) + ttl
     time = NaiveDateTime.utc_now()
-
-    :ets.insert(:disappearing_messages_table, {time, payload["name"], payload["message"]})
+    payload = Map.put(payload, "id", Ecto.UUID.generate)
 
     spawn(:ets, :insert, [
       :disappearing_messages_table,
-      {time, payload["name"], payload["message"]}
+      {time, payload["name"], payload["message"], payload["id"]}
     ])
 
-    delete_and_refresh(socket, time)
+    handle_disappearing(socket, time, payload["id"])
+
     broadcast(socket, "shout", payload)
     {:noreply, socket}
   end
 
-  def handle_in("shout", payload, socket) do
-    {:noreply, socket}
-  end
-
-  def delete_and_refresh(socket, time) do
+  def handle_disappearing(socket, time, id) do
     spawn(fn ->
-      :timer.sleep(10000)
+      :timer.sleep(1000)
       :ets.delete(:disappearing_messages_table, time)
-      messages = refresh_messages()
-#      broadcast(socket, "messages_history", %{messages: messages})
-      broadcast(socket, "message_delete", %{time_id: time})
+      broadcast(socket, "message_delete", %{id: id})
     end)
   end
 

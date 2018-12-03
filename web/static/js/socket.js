@@ -69,7 +69,7 @@ disappear.on('keypress', event => {
 
 function key_press_handle(event) {
     if (event.keyCode == 13) {
-        channel.push('shout', { name: name.val(), message: message.val(), disappear: disappear.is(':checked') });
+        channel.push('shout', { name: name.val(), message: message.val(), disappear: disappear.is(':checked')});
         message.val('');
     }
 };
@@ -77,7 +77,7 @@ function key_press_handle(event) {
 channel.on('shout', payload => {
     let line_message = "";
     if (payload.disappear) {
-        line_message = `<b>${payload.name || 'Anonymous'}:</b> <font color="red">${payload.message}</font><br>`;
+        line_message = `<div id="ts_${payload.id}"><b>${payload.name || 'Anonymous'}:</b> <font color="red">${payload.message}</font><br></div>`;
     } else {
         line_message = `<b>${payload.name || 'Anonymous'}:</b> ${payload.message}<br>`;
     }
@@ -97,7 +97,7 @@ channel.on('messages_history', messages => {
     messages_list.forEach( function(msg) {
         let line_message = "";
         if (msg["disappear"]) {
-            line_message = `<b>${msg["name"] || 'Anonymous'}:</b> <font color="red">${msg["message"]}</font><br>`;
+            line_message = `<div id="ts_${msg["id"]}"><b>${msg["name"] || 'Anonymous'}:</b> <font color="red">${msg["message"]}</font><br></div>`;
         } else {
             line_message = `<b>${msg["name"] || 'Anonymous'}:</b> ${msg["message"]}<br>`;
         }
@@ -106,8 +106,8 @@ channel.on('messages_history', messages => {
     });
 });
 
-channel.on('message_delete', time_id => {
-    list.findById(time_id).delete();
+channel.on('message_delete', response => {
+    list.find("#ts_"+response["id"]).remove();
 });
 
 export default socket

@@ -35,12 +35,3 @@ defmodule Slackir do
     :ok
   end
 end
-
-defmodule Slackir.UserSocket do
-  use Phoenix.Socket
-
-  ## Transports
-  socket "/socket", Slackir.UserSocket,
-         websocket: [timeout: 45_000],
-         longpoll: false
-end

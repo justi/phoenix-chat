@@ -39,8 +39,6 @@ end
 defmodule Slackir.UserSocket do
   use Phoenix.Socket
 
-  ...
-
   ## Transports
   socket "/socket", Slackir.UserSocket,
          websocket: [timeout: 45_000],

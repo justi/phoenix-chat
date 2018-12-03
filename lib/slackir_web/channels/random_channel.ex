@@ -79,7 +79,7 @@ defmodule Slackir.RandomChannel do
 
   def handle_disappearing(socket, time, id) do
     spawn(fn ->
-      :timer.sleep(1000)
+      :timer.sleep(10000)
       :ets.delete(:disappearing_messages_table, time)
       broadcast(socket, "message_delete", %{id: id})
     end)
